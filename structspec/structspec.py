@@ -217,7 +217,7 @@ def giveUp(category, err):
     assert isinstance(category, str) and isinstance(err, BaseException)
     print("{}: {}".format(category, err))
     try:
-        errNum = err.args[0]
+        errNum = int(err.args[0])
     except (ValueError, IndexError):
         errNum = 5
     exit(errNum)
