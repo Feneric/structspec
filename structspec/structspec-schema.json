@@ -3,10 +3,6 @@
     "title": "StructSpec Schema",
     "description": "This is a schema that defines binary packet formats.",
     "definitions": {
-        "id": {
-            "type": "string",
-            "pattern": "^[A-Za-z][A-Za-z_0-9]+$"
-        },
         "title": {
             "type": "string",
             "maxLength": 65
@@ -36,7 +32,8 @@
     "type": "object",
     "properties": {
         "id": {
-            "$ref": "#/definitions/id"
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z_0-9]+$"
         },
         "title": {
             "$ref": "#/definitions/title"
@@ -69,7 +66,7 @@
         "enums": {
             "type": "object",
             "description": "Enumerated type definitions.",
-            "minItems": 1,
+            "minProperties": 1,
             "additionalProperties": {
                 "type": "object",
                 "properties": {
@@ -89,7 +86,7 @@
                     "options": {
                         "type": "object",
                         "description": "Individual enumeration definitions.",
-                        "minItems": 1,
+                        "minProperties": 1,
                         "additionalProperties": {
                             "type": "object",
                             "properties": {
@@ -111,13 +108,14 @@
                         }
                     }
                 },
-                "required": ["options"]
+                "required": ["options"],
+                "additionalProperties": false
             }
         },
         "packets": {
             "type": "object",
             "description": "Individual packet definitions.",
-            "minItems": 1,
+            "minProperties": 1,
             "additionalProperties": {
                 "type": "object",
                 "properties": {
@@ -138,15 +136,12 @@
                         "$ref": "#/definitions/endianness"
                     },
                     "structure": {
-                        "type": "array",
+                        "type": "object",
                         "description": "Packet component definitions.",
-                        "minItems": 1,
-                        "items": {
+                        "minProperties": 1,
+                        "additionalProperties": {
                             "type": "object",
                             "properties": {
-                                "id": {
-                                    "$ref": "#/definitions/id"
-                                },
                                 "title": {
                                     "$ref": "#/definitions/title"
                                 },
@@ -204,6 +199,21 @@
                                         "pattern": "^#/"
                                     }]
                                 },
+                                "count": {
+                                    "anyOf": [{
+                                        "type": "integer",
+                                        "minimum": 2,
+                                        "multipleOf": 1.0
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^#/.+/value$"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^(.+)$"
+                                    }]
+                                },
                                 "size": {
                                     "anyOf": [{
                                         "type": "integer",
@@ -212,7 +222,11 @@
                                     },
                                     {
                                         "type": "string",
-                                        "pattern": "^#/"
+                                        "pattern": "^#/.+/value$"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^(.+)$"
                                     }]
                                 },
                                 "endianness": {
@@ -224,7 +238,11 @@
                                     },
                                     {
                                         "type": "string",
-                                        "pattern": "^#/"
+                                        "pattern": "^#/.+/value$"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^(.+)$"
                                     }]
                                 },
                                 "min": {
@@ -233,7 +251,11 @@
                                     },
                                     {
                                         "type": "string",
-                                        "pattern": "^#/"
+                                        "pattern": "^#/.+/value$"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "pattern": "^(.+)$"
                                     }]
                                 },
                                 "member": {
@@ -256,17 +278,17 @@
                                     }]
                                 }
                             },
-                            "required": ["id", "type"],
+                            "required": ["type"],
                             "additionalProperties": false
-                        },
-                        "uniqueItems": true
+                        }
                     },
                     "intermediate": {
                         "type": "boolean",
                         "default": false
                     }
                 },
-                "required": ["structure"]
+                "required": ["structure"],
+                "additionalProperties": false
             }
         }
     },

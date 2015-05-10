@@ -7,6 +7,7 @@ These tests may all be executed by running "setup.py test" or executing
 this file directly.
 """
 import unittest
+from os.path import join
 
 if __name__ == '__main__':
     from sys import path
