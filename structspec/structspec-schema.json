@@ -13,6 +13,57 @@
         "version": {
             "type": ["string", "number"]
         },
+        "type": {
+            "anyOf": [{
+                "type": "string",
+                "enum": [
+                    "char",
+                    "signed char",
+                    "unsigned char",
+                    "short",
+                    "signed short",
+                    "unsigned short",
+                    "short int",
+                    "signed short int",
+                    "unsigned short int",
+                    "int",
+                    "signed int",
+                    "unsigned int",
+                    "long",
+                    "signed long",
+                    "unsigned long",
+                    "long int",
+                    "signed long int",
+                    "unsigned long int",
+                    "long long",
+                    "signed long long",
+                    "unsigned long long",
+                    "long long int",
+                    "signed long long int",
+                    "unsigned long long int",
+                    "float",
+                    "double",
+                    "long double",
+                    "bool",
+                    "int8_t",
+                    "uint8_t",
+                    "int16_t",
+                    "uint16_t",
+                    "int24_t",
+                    "uint24_t",
+                    "int32_t",
+                    "uint32_t",
+                    "int64_t",
+                    "uint64_t",
+                    "hollerith",
+                    "string"
+                ]
+            },
+            {
+                "type": "string",
+                "pattern": "^#/"
+            }]
+        },
         "endianness": {
             "anyOf": [{
                 "type": "string",
@@ -83,6 +134,9 @@
                         "type": "boolean",
                         "default": false
                     },
+                    "type": {
+                        "$ref": "#/definitions/type"
+                    },
                     "options": {
                         "type": "object",
                         "description": "Individual enumeration definitions.",
@@ -95,6 +149,9 @@
                                 },
                                 "description": {
                                     "$ref": "#/definitions/description"
+                                },
+                                "type": {
+                                    "$ref": "#/definitions/type"
                                 },
                                 "value": {
                                     "type": [
@@ -149,55 +206,7 @@
                                     "$ref": "#/definitions/description"
                                 },
                                 "type": {
-                                    "anyOf": [{
-                                        "type": "string",
-                                        "enum": [
-                                            "char",
-                                            "signed char",
-                                            "unsigned char",
-                                            "short",
-                                            "signed short",
-                                            "unsigned short",
-                                            "short int",
-                                            "signed short int",
-                                            "unsigned short int",
-                                            "int",
-                                            "signed int",
-                                            "unsigned int",
-                                            "long",
-                                            "signed long",
-                                            "unsigned long",
-                                            "long int",
-                                            "signed long int",
-                                            "unsigned long int",
-                                            "long long",
-                                            "signed long long",
-                                            "unsigned long long",
-                                            "long long int",
-                                            "signed long long int",
-                                            "unsigned long long int",
-                                            "float",
-                                            "double",
-                                            "long double",
-                                            "bool",
-                                            "int8_t",
-                                            "uint8_t",
-                                            "int16_t",
-                                            "uint16_t",
-                                            "int24_t",
-                                            "uint24_t",
-                                            "int32_t",
-                                            "uint32_t",
-                                            "int64_t",
-                                            "uint64_t",
-                                            "hollerith",
-                                            "string"
-                                        ]
-                                    },
-                                    {
-                                        "type": "string",
-                                        "pattern": "^#/"
-                                    }]
+                                    "$ref": "#/definitions/type"
                                 },
                                 "count": {
                                     "anyOf": [{
