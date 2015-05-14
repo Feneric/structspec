@@ -9,6 +9,7 @@ this file directly.
 import unittest
 from doctest import DocTestSuite
 from os.path import join
+from zope.interface.verify import verifyObject
 
 if __name__ == '__main__':
     from sys import path
@@ -18,9 +19,13 @@ if __name__ == '__main__':
     path.append('.')
     chdir(normpath(join(getcwd(), dirname(__file__), '..', '..')))
     from structspec import *
+    from common import *
+    from interfaces import IOutputter
     import structspec
 else:
     from ..structspec import *
+    from ..common import *
+    from ..interfaces import IOutputter
     from structspec import structspec
 
 
@@ -34,6 +39,13 @@ class TestStructSpec(unittest.TestCase):
     Define our structspec tests.
     """
     print("Not yet implemented.")
+
+    def test_interface(self):
+        """
+        Test that it satisfies the appropriate interface.
+        """
+        for outputter in writeOut, writeOutBlock:
+            verifyObject(IOutputter, outputter)
 
 
 if __name__ == '__main__':

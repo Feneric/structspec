@@ -45,6 +45,8 @@
                     "double",
                     "long double",
                     "bool",
+                    "boolean",
+                    "_Bool",
                     "int8_t",
                     "uint8_t",
                     "int16_t",
@@ -56,7 +58,12 @@
                     "int64_t",
                     "uint64_t",
                     "hollerith",
-                    "string"
+                    "string",
+                    "str",
+                    "pascal",
+                    "pointer",
+                    "void",
+                    "padding"
                 ]
             },
             {
@@ -68,10 +75,8 @@
             "anyOf": [{
                 "type": "string",
                 "enum": [
-                    "ABCD",
-                    "BADC",
-                    "CDAB",
-                    "DCBA"
+                    "big",
+                    "little"
                 ]
             },
             {
@@ -186,6 +191,10 @@
                         "$ref": "#/definitions/version"
                     },
                     "intermediate": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "identifier": {
                         "type": "boolean",
                         "default": false
                     },
