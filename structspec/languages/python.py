@@ -228,8 +228,9 @@ def outputPython(specification, options, pyFile):
                     if options['verbose']:
                         print('Guessing enumeration type based on value.')
                     varType = str(type(option['value']))[7:-2]
-                    if varType == 'str' and (value.startswith('(') and
-                                             value.endswith(')')):
+                    if varType == 'str' and ((value.startswith('(') and
+                                             value.endswith(')')) or
+                                             value.startswith('0x')):
                         varType = 'int'
                         if options['verbose']:
                             print('Second-guessing enumeration type.')
