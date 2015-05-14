@@ -197,6 +197,7 @@ def loadAndValidateInputs(args):
             # Put in some extra checks here; look for missing
             # default endianess, missing types on enumerations,
             # ambiguous type definitions, etc.
+            # We can also verify all JSON pointer references.
     except ValidationError as valErr:
         giveUp("Validation error", valErr)
 

@@ -296,7 +296,6 @@ def outputPython(specification, options, pyFile):
                 typeName = structure['type'][structure['type'].rfind('/') + 1:]
                 typeInfo = resolveJsonPointer(specification,
                                               structure['type'][1:])
-                print typeName, options['includeIdentifier'], typeInfo.get('identifier', False)
                 if options['includeIdentifier'] or \
                     not typeInfo.get('identifier', False):
                     substructureList.append(typeName)
