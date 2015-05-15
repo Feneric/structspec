@@ -38,7 +38,7 @@ except ImportError:
 from importlib import import_module
 from inspect import getmembers, ismodule
 from zope.interface import directlyProvides
-from common import giveUp
+from common import giveUp, isNonPortableType, getJsonPointer
 # Fetch all language modules without knowing a priori what's available
 import languages
 for supportedLang in languages.__all__:
@@ -47,6 +47,9 @@ __langModTups__ = getmembers(languages, predicate=ismodule)
 langModules = dict([(langMod[1].name, langMod[1])
     for langMod in __langModTups__])
 from interfaces import IOutputter
+
+# Get a workable JSON pointer resolver from whichever library
+resolveJsonPointer = getJsonPointer()
 
 __version__ = '0.1'
 __line_len__ = 65
@@ -154,6 +157,35 @@ def parseArguments(args=None):
     return parser.parse_args(args)
 
 
+def checkJsonPointer(specification, jsonPointer):
+    """
+    Verifies that the given JSON Pointer can be resolved.
+
+    Given a string, determine if it is a JSON Pointer and
+    if so try to resolve it. If it does not need to be
+    resolved or resolves successfully, return True.
+
+    Args:
+        specification (dict): The JSON structure in
+                              which to resolve the
+                              JSON Pointer.
+        jsonPointer (str):    A string that may be a
+                              JSON Pointer.
+
+    Returns:
+        True if it is not a JSON Pointer or is one and
+        resolves, False otherwise.
+    """
+    assert isinstance(specification, dict)
+    assert isinstance(jsonPointer, str)
+    if jsonPointer.startswith('#/'):
+        try:
+            resolveJsonPointer(specification, jsonPointer[1:])
+        except:
+            return False
+    return True
+
+
 def loadAndValidateInputs(args):
     """
     Loads the specification and schema and validates the former.
@@ -194,10 +226,38 @@ def loadAndValidateInputs(args):
         validateJson(specification, schema)
         if args.verbose:
             print("Specification validated.")
-            # Put in some extra checks here; look for missing
-            # default endianess, missing types on enumerations,
-            # ambiguous type definitions, etc.
-            # We can also verify all JSON pointer references.
+            # If verbose, provide good practice checks
+            if 'endianness' not in specification:
+                print('A default endianness is recommended.')
+            elif specification['endianness'] == 'native':
+                print('A portable default endianness is recommended.')
+            # Basic enumeration checks
+            if 'enums' in specification:
+                for enumName, enum in specification['enums'].items():
+                    if 'type' not in enum:
+                        print('No type for enumeration {}.'.format(
+                              enumName))
+                    elif not checkJsonPointer(specification, enum['type']):
+                        print('{} has bad JSON Pointer.'.format(enumName))
+            # Basic packet checks
+            for packetName, packet in specification['packets'].items():
+                if packet.get('endianness', None) == 'native':
+                    print('Packet {} has a non-portable endianness.'.format(
+                          packetName))
+                for structureName, structure in packet['structure'].items():
+                    if isNonPortableType(structure['type']):
+                        print('Non-portable type for {} ({}).'.format(
+                              packetName, structureName))
+                    if structure.get('endianness', None) == 'native':
+                        print('{} ({}) has a non-portable endianness.'.format(
+                              packetName, structureName))
+                    for attr in ('type', 'max', 'min', 'member',
+                                 'count', 'size'):
+                        if attr in structure and \
+                                not checkJsonPointer(specification,
+                                                     structure[attr]):
+                            print('{} ({} {}) has bad JSON Pointer.'.format(
+                                  packetName, structureName, attr))
     except ValidationError as valErr:
         giveUp("Validation error", valErr)
 

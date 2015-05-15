@@ -141,8 +141,28 @@ def isIntegerType(typeName):
     Returns:
         True if it is a integer, False otherwise.
     """
-    return not isStringType(typeName) and not isFloatType(typeName) and \
-           not isBooleanType(typeName)
+    return typeName in typeSizes and not isStringType(typeName) and \
+           not isFloatType(typeName) and not isBooleanType(typeName) \
+           and not isPadding(typeName)
+
+
+def isNonPortableType(typeName):
+    """
+    Determines whether or not the given type is unambiguous.
+
+    Given the name of the type returns a True if it is an
+    integer type with a size that varies across platforms.
+
+    Args:
+        typeName (str): The name of the type to be checked.
+
+    Returns:
+        True if a non-portable size, False otherwise.
+    """
+    return isIntegerType(typeName) and typeName not in (
+        "int8_t", "uint8_t", "int16_t", "uint16_t",
+        "int24_t", "uint24_t", "int32_t", "uint32_t",
+        "int64_t", "uint64_t")
 
 
 def getJsonPointer():
