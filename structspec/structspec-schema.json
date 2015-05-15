@@ -76,8 +76,11 @@
                 "type": "string",
                 "enum": [
                     "big",
-                    "little"
-                ]
+                    "little",
+                    "network",
+                    "native"
+                ],
+                "default": "native"
             },
             {
                 "type": "string",

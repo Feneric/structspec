@@ -18,9 +18,12 @@ moduleProvides(ILanguage)
 
 name = "Python"
 filenameExtension = 'py'
+
+# Get a workable JSON pointer resolver from whichever library
 resolveJsonPointer = getJsonPointer()
 
 
+# The Python struct library characters for data types
 typeFormatChar = {
     "char": 'c',
     "signed char": 'b',
@@ -71,6 +74,13 @@ typeFormatChar = {
     "padding": 'x'
 }
 
+# The Python struct library characters for endianness
+endianFormatChar = {
+    "big": '>',
+    "little": '<',
+    "network": '!',
+    "native": '@'
+}
 
 def handleBitFields(bitFieldLen, bitFieldCount, formatList, varList):
     """
@@ -83,7 +93,7 @@ def handleBitFields(bitFieldLen, bitFieldCount, formatList, varList):
     Args:
         bitFieldLen (int):    The length of the current bitfield.
         bitFieldCount (int):  The current tally of bitfields.
-        formatList (list):    List of struct items to turn into string.
+        formatList (list): List of struct items to turn into string.
         varList (list):       List of variable names to turn into string.
 
     Returns:
@@ -104,13 +114,14 @@ def handleBitFields(bitFieldLen, bitFieldCount, formatList, varList):
             formatList.append('Q')
         else:
             print("Bitfield too long.")
+        bitFieldLen = 0
         varList.append("bitField{}".format(bitFieldCount))
         bitFieldCount += 1
     return bitFieldCount
 
 
 def handleStructBreaks(pyFile, formatList, countList, varList,
-                       formatStrList, prefix=''):
+                       formatStrList, endianness='', prefix=''):
     """
     Writes pending lines prior to a topic shift.
 
@@ -128,6 +139,7 @@ def handleStructBreaks(pyFile, formatList, countList, varList,
                                  process.
         formatStrList (list):    List of all formatLists already
                                  created.
+        endianness (str):        The endianness.
         prefix (str):            A string to prepend to output lines.
     """
     assert hasattr(pyFile, 'write')
@@ -135,6 +147,7 @@ def handleStructBreaks(pyFile, formatList, countList, varList,
     assert isinstance(countList, list)
     assert isinstance(varList, list)
     assert isinstance(formatStrList, list)
+    assert isinstance(endianness, str)
     assert isinstance(prefix, str)
     if formatList:
         formatStr = ''.join(formatList)
@@ -142,20 +155,24 @@ def handleStructBreaks(pyFile, formatList, countList, varList,
             countStr = '.format({})'.format(', '.join(countList))
         else:
             countStr = ''
-        writeOut(pyFile, 'segmentFmt = "{}"{}'.format(formatStr,
-                 countStr), prefix)
+        formatStr = "{}{}".format(endianFormatChar.get(endianness, ''),
+                                  formatStr)
+        writeOut(pyFile, 'segmentFmt = "{}"{}'.format(
+                 formatStr, countStr), prefix)
+        writeOut(pyFile, 'segmentLen = calcsize(segmentFmt)',
+                 prefix)
+        writeOut(pyFile, 'position += segmentLen', prefix)
         varStr = ', '.join(varList)
         if len(varList) > 1:
             varStr = '({})'.format(varStr)
-            suffix = ''
         else:
-            suffix = '[0]'
+            varStr = '[{}]'.format(varStr)
         writeOut(pyFile,
-                 '{} = unpack_from(segmentFmt, rawData, position){}'.format(
-                 varStr, suffix), prefix)
-        writeOut(pyFile, 'position += calcsize(segmentFmt)', prefix)
+                 '{} = unpack_from(segmentFmt, rawData, position)'.format(
+                     varStr), prefix)
         formatStrList.append("calcsize('{}'{})".format(formatStr,
                              countStr))
+        # Empty work lists
         formatList = []
         varList = []
         countList = []
@@ -228,9 +245,8 @@ def outputPython(specification, options, pyFile):
                     if options['verbose']:
                         print('Guessing enumeration type based on value.')
                     varType = str(type(option['value']))[7:-2]
-                    if varType == 'str' and ((value.startswith('(') and
-                                             value.endswith(')')) or
-                                             value.startswith('0x')):
+                    if varType == 'str' and (value.startswith('(') and
+                                             value.endswith(')')):
                         varType = 'int'
                         if options['verbose']:
                             print('Second-guessing enumeration type.')
@@ -287,24 +303,20 @@ def outputPython(specification, options, pyFile):
         bitFieldCount = bitFieldLen = 0
         bitFields = []
         for structureName, structure in packet['structure'].items():
+            endianness = structure.get('endianness', packet.get('endianness',
+                                       specification.get('endianness', None)))
             if 'description' in structure:
                 writeOut(pyFile, '')
-                writeOutBlock(pyFile, structure['description'], prefix + '# ')
+                writeOutBlock(pyFile, structure['description'], '    # ')
             line = []
             if structure['type'].startswith('#/'):
                 handleStructBreaks(pyFile, formatList, countList, varList,
-                                   formatStrList, prefix)
+                                   formatStrList, endianness, prefix)
                 typeName = structure['type'][structure['type'].rfind('/') + 1:]
-                typeInfo = resolveJsonPointer(specification,
-                                              structure['type'][1:])
-                if options['includeIdentifier'] or \
-                    not typeInfo.get('identifier', False):
-                    substructureList.append(typeName)
-                    writeOut(pyFile,
-                             "packet['{}'] = unpack_{}(rawData[:position])".format(
-                             structureName, typeName), prefix)
-                    writeOut(pyFile, "position += get_{}_len()".format(
-                             structureName), prefix)
+                substructureList.append(typeName)
+                line.append("packet['{}'] = unpack_{}(rawData[:position])".format(
+                    structureName, typeName))
+                line.append("position += get_{}_len()".format(structureName))
             else:
                 typeName = structure['type']
                 if 'count' in structure:
@@ -333,10 +345,8 @@ def outputPython(specification, options, pyFile):
                        sizeInBits % 8 != 0:
                         gotBitField = True
                 if typeName in typeFormatChar and not gotBitField:
-                    bitFieldCount = handleBitFields(bitFieldLen,
-                                                    bitFieldCount,
+                    bitFieldCount = handleBitFields(bitFieldLen, bitFieldCount,
                                                     formatList, varList)
-                    bitFieldLen = 0
                     formatList.append(typeFormatChar[typeName])
                     varList.append("packet['{}']".format(structureName))
                 elif gotBitField:
@@ -349,9 +359,8 @@ def outputPython(specification, options, pyFile):
                 writeOut(pyFile, ''.join(line), prefix)
         bitFieldCount = handleBitFields(bitFieldLen, bitFieldCount,
                                         formatList, varList)
-        bitFieldLen = 0
         handleStructBreaks(pyFile, formatList, countList, varList,
-                           formatStrList, prefix)
+                           formatStrList, endianness, prefix)
         for bitFieldName, bitFieldNum, bitFieldSize in bitFields:
             bitFieldMask = hex(int(pow(2, bitFieldSize)))
             if isFloatType(typeName):
@@ -372,8 +381,7 @@ def outputPython(specification, options, pyFile):
         # create the get length function
         writeOut(pyFile, 'def get_{}_len():'.format(packetName))
         writeOut(pyFile, '"""', prefix)
-        writeOut(pyFile, "Calculates the size of {}.".format(
-                 packetName), prefix)
+        writeOut(pyFile, "Calculates the size of {}.".format(packetName), prefix)
         writeOut(pyFile, '')
         writeOut(pyFile, "Calculates the total size of the {} structure".format(
                  packetName), prefix)
@@ -385,19 +393,16 @@ def outputPython(specification, options, pyFile):
         writeOut(pyFile, '"""', prefix)
         if not formatStrList:
             formatStrList = ['0']
-        writeOut(pyFile, 'totalSize = {}'.format(' + '.join(
-                 formatStrList)), prefix)
+        writeOut(pyFile, 'totalSize = {}'.format(' + '.join(formatStrList)), prefix)
         for substruct in substructureList:
-            writeOut(pyFile, 'totalSize += get_{}_len()'.format(
-                     substruct), prefix)
+            writeOut(pyFile, 'totalSize += get_{}_len()'.format(substruct), prefix)
         writeOut(pyFile, 'return totalSize', prefix)
         writeOut(pyFile, '')
         writeOut(pyFile, '')
         # create the validate function
         writeOut(pyFile, 'def validate_{}(rawData):'.format(packetName))
         writeOut(pyFile, '"""', prefix)
-        writeOut(pyFile, "Reads and validates a {} packet.".format(
-                 packetName), prefix)
+        writeOut(pyFile, "Reads and validates a {} packet.".format(packetName), prefix)
         writeOut(pyFile, '')
         writeOut(pyFile, "Reads a {} structure from raw binary data".format(
                  packetName), prefix)
@@ -408,12 +413,10 @@ def outputPython(specification, options, pyFile):
                  2 * prefix)
         writeOut(pyFile, '')
         writeOut(pyFile, 'Returns:', prefix)
-        writeOut(pyFile, 'A structure representing the {} packet.'.format(
-                 packetName), 2 * prefix)
+        writeOut(pyFile, 'A structure representing the {} packet.'.format(packetName),
+                 2 * prefix)
         writeOut(pyFile, '"""', prefix)
         writeOut(pyFile, 'packet = get_{}(rawData)'.format(packetName), prefix)
-        # This still needs to do more here; it can make use of things like
-        # min and max etc. to verify that data is as expected.
         writeOut(pyFile, 'return packet', prefix)
         writeOut(pyFile, '')
         writeOut(pyFile, '')
