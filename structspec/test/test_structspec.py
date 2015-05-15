@@ -18,10 +18,9 @@ if __name__ == '__main__':
     path.append('structspec')
     path.append('.')
     chdir(normpath(join(getcwd(), dirname(__file__), '..', '..')))
-    from structspec import *
-    from common import *
     from interfaces import IOutputter
     import structspec
+    import common
 else:
     from ..structspec import *
     from ..common import *
@@ -31,6 +30,7 @@ else:
 
 def load_tests(loader, tests, ignore):
     tests.addTests(DocTestSuite(structspec))
+    tests.addTests(DocTestSuite(common))
     return tests
 
 
@@ -44,7 +44,7 @@ class TestStructSpec(unittest.TestCase):
         """
         Test that it satisfies the appropriate interface.
         """
-        for outputter in writeOut, writeOutBlock:
+        for outputter in common.writeOut, common.writeOutBlock:
             verifyObject(IOutputter, outputter)
 
 

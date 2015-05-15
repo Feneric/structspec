@@ -76,6 +76,22 @@ def isStringType(typeName):
 
     Returns:
         True if it is a string, False otherwise.
+
+    Examples:
+        >>> isStringType('string')
+        True
+        >>> isStringType('char')
+        True
+        >>> isStringType('hollerith')
+        True
+        >>> isStringType('pascal')
+        True
+        >>> isStringType('int')
+        False
+        >>> isStringType('float')
+        False
+        >>> isStringType('bool')
+        False
     """
     return typeName in ('char', 'string', 'str', 'hollerith', 'pascal')
 
@@ -92,6 +108,22 @@ def isBooleanType(typeName):
 
     Returns:
         True if it is a boolean, False otherwise.
+
+    Examples:
+        >>> isBooleanType('bool')
+        True
+        >>> isBooleanType('boolean')
+        True
+        >>> isBooleanType('_Bool')
+        True
+        >>> isBooleanType('char')
+        False
+        >>> isBooleanType('string')
+        False
+        >>> isBooleanType('int')
+        False
+        >>> isBooleanType('float')
+        False
     """
     return typeName in ('bool', 'boolean', '_Bool')
 
@@ -108,6 +140,20 @@ def isPadding(typeName):
 
     Returns:
         True if it is padding, False otherwise.
+
+    Examples:
+        >>> isPadding('padding')
+        True
+        >>> isPadding('boolean')
+        False
+        >>> isPadding('char')
+        False
+        >>> isPadding('string')
+        False
+        >>> isPadding('int')
+        False
+        >>> isPadding('float')
+        False
     """
     return typeName == 'padding'
 
@@ -124,6 +170,22 @@ def isFloatType(typeName):
 
     Returns:
         True if it is a float, False otherwise.
+
+    Examples:
+        >>> isFloatType('float')
+        True
+        >>> isFloatType('double')
+        True
+        >>> isFloatType('long double')
+        True
+        >>> isFloatType('boolean')
+        False
+        >>> isFloatType('char')
+        False
+        >>> isFloatType('string')
+        False
+        >>> isFloatType('int')
+        False
     """
     return typeName in ('float', 'double', 'long double')
 
@@ -140,6 +202,32 @@ def isIntegerType(typeName):
 
     Returns:
         True if it is a integer, False otherwise.
+
+    Examples:
+        >>> isIntegerType('int')
+        True
+        >>> isIntegerType('short')
+        True
+        >>> isIntegerType('unsigned short')
+        True
+        >>> isIntegerType('long')
+        True
+        >>> isIntegerType('unsigned long')
+        True
+        >>> isIntegerType('long long')
+        True
+        >>> isIntegerType('uint8_t')
+        True
+        >>> isIntegerType('uint64_t')
+        True
+        >>> isIntegerType('float')
+        False
+        >>> isIntegerType('boolean')
+        False
+        >>> isIntegerType('char')
+        False
+        >>> isIntegerType('string')
+        False
     """
     return typeName in typeSizes and not isStringType(typeName) and \
            not isFloatType(typeName) and not isBooleanType(typeName) \
@@ -158,6 +246,28 @@ def isNonPortableType(typeName):
 
     Returns:
         True if a non-portable size, False otherwise.
+
+    Examples:
+        >>> isNonPortableType('int')
+        True
+        >>> isNonPortableType('short')
+        True
+        >>> isNonPortableType('unsigned short')
+        True
+        >>> isNonPortableType('long')
+        True
+        >>> isNonPortableType('unsigned long')
+        True
+        >>> isNonPortableType('long long')
+        True
+        >>> isNonPortableType('int8_t')
+        False
+        >>> isNonPortableType('uint16_t')
+        False
+        >>> isNonPortableType('uint32_t')
+        False
+        >>> isNonPortableType('str')
+        False
     """
     return isIntegerType(typeName) and typeName not in (
         "int8_t", "uint8_t", "int16_t", "uint16_t",
@@ -175,6 +285,11 @@ def getJsonPointer():
 
     Returns:
         A function that can resolve a given JSON Pointer.
+
+    Examples:
+        >>> resolveJsonPointer = getJsonPointer()
+        >>> callable(resolveJsonPointer)
+        True
     """
     try:
         from jsonpointer import resolve_pointer as resolveJsonPointer
@@ -235,6 +350,21 @@ def writeOut(outFiles, outStr, prefix=''):
         outStr (str):             The string to output.
         prefix (str):             Optional string to use as
                                   a prefix.
+
+    Examples:
+        >>> from StringIO import StringIO
+        >>> out1 = StringIO()
+        >>> out2 = StringIO()
+        >>> writeOut(out1, 'test')
+        >>> out1.getvalue().rstrip()
+        'test'
+        >>> writeOut((out1, out2), 'test', 'this is a ')
+        >>> out2.getvalue().rstrip()
+        'this is a test'
+        >>> out1.getvalue()[:4]
+        'test'
+        >>> out1.getvalue()[-8:-1]
+        ' a test'
     """
     assert hasattr(outFiles, 'write') or (isinstance(outFiles, tuple)
         and all([hasattr(outFile, 'write') for outFile in outFiles]))
@@ -260,6 +390,21 @@ def writeOutBlock(outFiles, outStr, prefix=''):
         outStr (str):             The string to output.
         prefix (str):             Optional string to use
                                   as a prefix.
+
+    Examples:
+        >>> from StringIO import StringIO
+        >>> out1 = StringIO()
+        >>> out2 = StringIO()
+        >>> writeOut(out2, 'test', 'a ')
+        >>> out2.getvalue().rstrip()
+        'a test'
+        >>> writeOut((out1, out2), 'test', 'this is a ')
+        >>> out1.getvalue().rstrip()
+        'this is a test'
+        >>> out2.getvalue()[:6]
+        'a test'
+        >>> out2.getvalue()[-8:-1]
+        ' a test'
     """
     assert hasattr(outFiles, 'write') or (isinstance(outFiles, tuple)
         and all([hasattr(outFile, 'write') for outFile in outFiles]))

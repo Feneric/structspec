@@ -41,6 +41,7 @@ from zope.interface import directlyProvides
 from common import giveUp, isNonPortableType, getJsonPointer
 # Fetch all language modules without knowing a priori what's available
 import languages
+from languages import *
 for supportedLang in languages.__all__:
    import_module('languages.' + supportedLang)
 __langModTups__ = getmembers(languages, predicate=ismodule)
@@ -76,34 +77,36 @@ def parseArguments(args=None):
                 specification='specification.json', \
                 languages=['Python', 'C'], \
                 schema='structspec-schema.json', \
-                test=False, verbose=False)
+                include=False, test=False, verbose=False)
         >>> # Note that usually this is given no arguments so
         >>> # it'll just read from the command line.
         >>> # It's here given an empty list just for testing.
-        >>> parser = parseArguments([])
-        >>> parser == expectedResults
+        >>> parseAgs = parseArguments([])
+        >>> parseAgs == expectedResults
         True
         >>> expectedResults.verbose = True
-        >>> parser = parseArguments(['--verbose'])
-        >>> parser == expectedResults
+        >>> expectedResults.include = True
+        >>> parseAgs = parseArguments(['--verbose', '--include'])
+        >>> parseAgs == expectedResults
         True
+        >>> expectedResults.include = False
         >>> expectedResults.test = True
-        >>> parser = parseArguments(['--test', '-v'])
-        >>> parser == expectedResults
+        >>> parseAgs = parseArguments(['--test', '-v'])
+        >>> parseAgs == expectedResults
         True
         >>> expectedResults.specification = 'my.json'
         >>> expectedResults.test = expectedResults.verbose = False
-        >>> parser = parseArguments(['--specification','my.json'])
-        >>> parser == expectedResults
+        >>> parseAgs = parseArguments(['--specification','my.json'])
+        >>> parseAgs == expectedResults
         True
         >>> expectedResults.schema = 's.json'
-        >>> parser = parseArguments(['--schema', 's.json', '-s','my.json'])
-        >>> parser == expectedResults
+        >>> parseAgs = parseArguments(['--schema', 's.json', '-s','my.json'])
+        >>> parseAgs == expectedResults
         True
         >>> expectedResults.specification = 'specification.json'
         >>> expectedResults.schema = 'structspec-schema.json'
         >>> # This next one displays help and exits; catch the exit
-        >>> parser = parseArguments(['--help'])
+        >>> parseAgs = parseArguments(['--help'])
         Traceback (most recent call last):
         SystemExit: 0
     """
@@ -175,6 +178,16 @@ def checkJsonPointer(specification, jsonPointer):
     Returns:
         True if it is not a JSON Pointer or is one and
         resolves, False otherwise.
+
+    Examples:
+        >>> checkJsonPointer({}, '/')
+        True
+        >>> checkJsonPointer({}, '#/')
+        False
+        >>> checkJsonPointer({'unu': 1}, '#/unu')
+        True
+        >>> checkJsonPointer({'unu':1}, '#/nul')
+        False
     """
     assert isinstance(specification, dict)
     assert isinstance(jsonPointer, str)
