@@ -12,12 +12,18 @@ setup(
     name='structspec',
     version='0.1.0',
     description='Language-independent binary packet structure specification',
-    long_description=open('README.md').read(),
+    long_description=open(join(dirname(__file__), 'README.rst')).read(),
     keywords='software development JSON Schema Python JavaScript C C++ Nim',
     author='Eric W. Brown',
     url='https://github.com/Feneric/structspec',
     packages=find_packages(),
     test_suite='structspec.test.test_structspec',
+    install_requires = [
+        'jsonschema', 'jsonpointer', 'jsonspec'
+    ],
+    extras_require = {
+        'documentation': ["doxypypy"]
+    },
     entry_points={
         'console_scripts': [
             'structspec = structspec.structspec:main'

@@ -1,5 +1,8 @@
-# structspec
+structspec
+==========
+
 A language-independent, platform-neutral way of specifying binary packet structures.
+------------------------------------------------------------------------------------
 
 Imagine you're working in a multiple-person project that makes use of more than one language and
 perhaps spans multiple hardware platforms, and that you need to pass binary packets across
