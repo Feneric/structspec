@@ -1,0 +1,4 @@
+"""
+Binary Structure Specification Helper
+"""
+

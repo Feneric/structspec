@@ -9,28 +9,25 @@ this file directly.
 import unittest
 from doctest import DocTestSuite
 from os.path import join
+from importlib import import_module
 from zope.interface.verify import verifyObject
 
 if __name__ == '__main__':
     from sys import path
     from os import chdir, getcwd
     from os.path import normpath, dirname
-    path.append('structspec')
     path.append('.')
     chdir(normpath(join(getcwd(), dirname(__file__), '..', '..')))
-    from interfaces import IOutputter
-    import structspec
-    import common
-else:
-    from ..structspec import *
-    from ..common import *
-    from ..interfaces import IOutputter
-    from structspec import structspec
+import structspec
+import structspec.common
+import structspec.interfaces
+import structspec.languages
 
 
 def load_tests(loader, tests, ignore):
     tests.addTests(DocTestSuite(structspec))
-    tests.addTests(DocTestSuite(common))
+    tests.addTests(DocTestSuite(structspec.common))
+    tests.addTests(DocTestSuite(structspec.languages))
     return tests
 
 
@@ -44,8 +41,9 @@ class TestStructSpec(unittest.TestCase):
         """
         Test that it satisfies the appropriate interface.
         """
-        for outputter in common.writeOut, common.writeOutBlock:
-            verifyObject(IOutputter, outputter)
+        for outputter in (structspec.common.writeOut,
+                          structspec.common.writeOutBlock):
+            verifyObject(structspec.interfaces.IOutputter, outputter)
 
 
 if __name__ == '__main__':
