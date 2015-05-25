@@ -22,12 +22,16 @@ import structspec
 import structspec.common
 import structspec.interfaces
 import structspec.languages
+import structspec.languages.c
+import structspec.languages.python
 
 
 def load_tests(loader, tests, ignore):
     tests.addTests(DocTestSuite(structspec))
     tests.addTests(DocTestSuite(structspec.common))
     tests.addTests(DocTestSuite(structspec.languages))
+    tests.addTests(DocTestSuite(structspec.languages.c))
+    tests.addTests(DocTestSuite(structspec.languages.python))
     return tests
 
 
@@ -37,13 +41,21 @@ class TestStructSpec(unittest.TestCase):
     """
     print("Not yet implemented.")
 
-    def test_interface(self):
+    def test_write_interfaces(self):
         """
-        Test that it satisfies the appropriate interface.
+        Test that outputters all satisfy the appropriate interface.
         """
         for outputter in (structspec.common.writeOut,
                           structspec.common.writeOutBlock):
             verifyObject(structspec.interfaces.IOutputter, outputter)
+
+    def test_language_interfaces(self):
+        """
+        Test that the language modules all satisfy the proper interface.
+        """
+        for langModule in (structspec.languages.c,
+                           structspec.languages.python):
+            verifyObject(structspec.interfaces.ILanguage, langModule)
 
 
 if __name__ == '__main__':

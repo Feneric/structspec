@@ -10,9 +10,9 @@ binary format in the Python programming language.
 from math import pow
 from os.path import basename
 from zope.interface import moduleProvides
-from common import writeOut, writeOutBlock, giveUp, getJsonPointer, \
+from structspec.common import writeOut, writeOutBlock, giveUp, getJsonPointer, \
     isStringType, isFloatType, isBooleanType, schemaVal, typeSizes
-from interfaces import ILanguage
+from structspec.interfaces import ILanguage
 
 moduleProvides(ILanguage)
 

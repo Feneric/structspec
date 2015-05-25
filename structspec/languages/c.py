@@ -9,9 +9,9 @@ binary format in the C programming language.
 
 from os.path import basename
 from zope.interface import moduleProvides
-from common import writeOut, writeOutBlock, giveUp, getJsonPointer, \
+from structspec.common import writeOut, writeOutBlock, giveUp, getJsonPointer, \
                    schemaVal, typeSizes, getJsonPointer
-from interfaces import ILanguage
+from structspec.interfaces import ILanguage
 
 moduleProvides(ILanguage)
 
