@@ -304,7 +304,7 @@ def outputPython(specification, options, pyFile):
         bitFields = []
         for structureName, structure in packet['structure'].items():
             endianness = structure.get('endianness', packet.get('endianness',
-                                       specification.get('endianness', None)))
+                                       specification.get('endianness', '')))
             if 'description' in structure:
                 writeOut(pyFile, '')
                 writeOutBlock(pyFile, structure['description'], '    # ')

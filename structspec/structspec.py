@@ -13,6 +13,7 @@ core and validation, respectively).
 """
 
 from sys import exit
+from os.path import join
 from os import linesep
 from collections import OrderedDict
 from argparse import ArgumentParser, Namespace
@@ -150,7 +151,7 @@ def parseArguments(args=None):
         help='Make output more verbose.'
     )
     parser.add_argument('--version', action='version', version=__version__)
-    defaultStructSpecSchema = 'structspec-schema.json'
+    defaultStructSpecSchema = join('structspec', 'structspec-schema.json')
     parser.add_argument(
         '--schema', default=defaultStructSpecSchema,
         nargs='?', const=defaultStructSpecSchema,
