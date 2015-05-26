@@ -43,7 +43,7 @@ from common import giveUp, isNonPortableType, getJsonPointer
 import languages
 from languages import *
 for supportedLang in languages.__all__:
-   import_module('languages.' + supportedLang)
+   import_module('structspec.languages.' + supportedLang)
 __langModTups__ = getmembers(languages, predicate=ismodule)
 langModules = dict([(langMod[1].name, langMod[1])
     for langMod in __langModTups__])
@@ -285,7 +285,12 @@ def loadAndValidateInputs(args):
 
 
 # Execute the following when run from the command line.
-if __name__ == "__main__":
+def main():
+    """
+    The main routine when run from the command line.
+
+    Executes structspec interactively from the command line.
+    """
     args = parseArguments()
     if not args.test:
         specification, schema, options = loadAndValidateInputs(args)
@@ -294,4 +299,8 @@ if __name__ == "__main__":
     else:
         import doctest
         doctest.testmod(verbose=args.verbose)
+
+
+if __name__ == "__main__":
+    main()
 
