@@ -93,11 +93,27 @@ def handleBitFields(bitFieldLen, bitFieldCount, formatList, varList):
     Args:
         bitFieldLen (int):    The length of the current bitfield.
         bitFieldCount (int):  The current tally of bitfields.
-        formatList (list): List of struct items to turn into string.
+        formatList (list):    List of struct items to turn into string.
         varList (list):       List of variable names to turn into string.
 
     Returns:
         The number of bitfields processed so far.
+
+    Examples:
+        >>> fmtLst = []
+        >>> varLst = []
+        >>> handleBitFields(5, 0, fmtLst, varLst)
+        1
+        >>> fmtLst
+        ['B']
+        >>> varLst
+        ['bitField0']
+        >>> handleBitFields(15, 1, fmtLst, varLst)
+        2
+        >>> fmtLst
+        ['B', 'H']
+        >>> varLst
+        ['bitField0', 'bitField1']
     """
     assert isinstance(bitFieldLen, int)
     assert isinstance(bitFieldCount, int)
@@ -422,7 +438,8 @@ def outputPython(specification, options, pyFile):
         writeOut(pyFile, '')
 
     writeOut(pyFile, 'if __name__ == "__main__":')
-    writeOut(pyFile, '    pass')
+    writeOut(pyFile, '    import doctest')
+    writeOut(pyFile, '    doctest.testmod()')
 
 
 def outputForLanguage(specification, options):

@@ -39,8 +39,10 @@ def outputC(specification, options, hFile, cFile):
     assert isinstance(specification, dict)
     assert hasattr(hFile, 'write')
     assert hasattr(cFile, 'write')
+    writeOut(cFile, '/** @file {} */'.format(options['cFilename']))
     writeOut(cFile, '#include "{}"'.format(options['hFilename']))
     defName = "STRUCTSPEC_{}_H".format(specification['id'].upper())
+    writeOut(hFile, '/** @file {} */'.format(options['hFilename']))
     writeOut(hFile, '#ifndef {}'.format(defName))
     writeOut(hFile, '#define {}'.format(defName))
     writeOut(hFile, '#ifdef __cplusplus')
@@ -48,28 +50,40 @@ def outputC(specification, options, hFile, cFile):
     writeOut(hFile, '{')
     writeOut(hFile, '#endif /* __cplusplus */')
     writeOut(hFile, '')
-    writeOut((hFile, cFile), '/*')
+    writeOut((hFile, cFile), '/**')
     prefix = ' * '
-    writeOut((hFile, cFile), specification['title'], prefix)
+    writeOut((hFile, cFile), '@brief\t{}'.format(specification['title']),
+             prefix)
     if 'description' in specification:
         writeOut((hFile, cFile), ' *')
-        writeOutBlock((hFile, cFile), specification['description'], prefix)
-    for tag in ('version', 'date', 'author', 'documentation', 'metadata'):
+        writeOutBlock((hFile, cFile), '@details\t'.format(
+                      specification['description']), prefix)
+    for tag in ('version', 'date', 'author'):
         if tag in specification:
             writeOut((hFile, cFile), ' *')
-            writeOut((hFile, cFile), '{}: {}'.format(tag.title(),
-                                                     specification[tag]),
+            writeOut((hFile, cFile), '@{}\t{}'.format(tag,
+                                                      specification[tag]),
+                     prefix)
+    for tag in ('documentation', 'metadata'):
+        if tag in specification:
+            writeOut((hFile, cFile), ' *')
+            writeOut((hFile, cFile), '[{}]({})'.format(tag.title(),
+                                                       specification[tag]),
                      prefix)
     writeOut((hFile, cFile), ' */')
     writeOut((hFile, cFile), '')
     writeOut(hFile, '#include <stdint.h>')
     writeOut(hFile, '')
     for enumerationName, enumeration in specification['enums'].items():
-        writeOut(hFile, '/*')
-        if 'title' in enumeration:
-           writeOut(hFile, enumeration['title'], ' * ')
+        if not enumeration.get('preprocessor', False):
+            writeOut(hFile, '/**')
+            writeOut(hFile, '@enum\t{}'.format(enumerationName), ' * ')
         else:
-           writeOut(hFile, enumerationName, ' * ')
+            writeOut(hFile, '/*')
+        if 'title' in enumeration:
+            writeOut(hFile, enumeration['title'], ' * ')
+        else:
+            writeOut(hFile, enumerationName, ' * ')
         if 'description' in enumeration:
             writeOut(hFile, ' *')
             writeOutBlock(hFile, enumeration['description'], ' * ')
@@ -78,7 +92,7 @@ def outputC(specification, options, hFile, cFile):
             for optionName, option in enumeration['options'].items():
                 line = []
                 if 'description' in option:
-                    writeOut(hFile, '/*')
+                    writeOut(hFile, '/**')
                     writeOutBlock(hFile, option['description'], ' * ')
                     writeOut(hFile, ' */')
                 line.append('#define ')
@@ -86,7 +100,7 @@ def outputC(specification, options, hFile, cFile):
                 if 'value' in option:
                     line.append(' {}'.format(option['value']))
                 if 'title' in option:
-                    line.append(' /* {} */'.format(option['title']))
+                    line.append(' /** {} */'.format(option['title']))
                 writeOut(hFile, ''.join(line))
         else:
             writeOut(hFile, "typedef enum {")
@@ -94,14 +108,14 @@ def outputC(specification, options, hFile, cFile):
             for optionName, option in enumeration['options'].items():
                 line = []
                 if 'description' in option:
-                    writeOut(hFile, '  /*')
+                    writeOut(hFile, '  /**')
                     writeOutBlock(hFile, option['description'], '   * ')
                     writeOut(hFile, '   */')
                 line.append(optionName)
                 if 'value' in option:
                     line.append(' = {}'.format(option['value']))
                 if 'title' in option:
-                    line.append(' /* {} */'.format(option['title']))
+                    line.append(' /** {} */'.format(option['title']))
                 if optionName != lastOption:
                     line.append(',')
                 writeOut(hFile, ''.join(line), '  ')
@@ -112,7 +126,7 @@ def outputC(specification, options, hFile, cFile):
         for structureName, structure in packet['structure'].items():
             line = []
             if 'description' in structure:
-                writeOut(hFile, '  /*')
+                writeOut(hFile, '  /**')
                 writeOutBlock(hFile, structure['description'], '   * ')
                 writeOut(hFile, '   */')
             if structure['type'].startswith('#/'):
@@ -144,7 +158,7 @@ def outputC(specification, options, hFile, cFile):
                 if sizeInBits != typeSizes.get(typeName, -1):
                     line.append(' : {}'.format(sizeLabel))
             if 'title' in structure:
-                line.append(' /* {} */'.format(structure['title']))
+                line.append(' /** {} */'.format(structure['title']))
             line.append(';')
             writeOut(hFile, ''.join(line), '  ')
         writeOut(hFile, "}} {}".format(packetName))
