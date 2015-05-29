@@ -119,7 +119,7 @@ def outputC(specification, options, hFile, cFile):
                 if optionName != lastOption:
                     line.append(',')
                 writeOut(hFile, ''.join(line), '  ')
-            writeOut(hFile, "}} {}".format(enumerationName))
+            writeOut(hFile, "}} {};".format(enumerationName))
         writeOut(hFile, '')
     for packetName, packet in specification['packets'].items():
         writeOut(hFile, "typedef struct {")
@@ -161,7 +161,7 @@ def outputC(specification, options, hFile, cFile):
                 line.append(' /** {} */'.format(structure['title']))
             line.append(';')
             writeOut(hFile, ''.join(line), '  ')
-        writeOut(hFile, "}} {}".format(packetName))
+        writeOut(hFile, "}} {};".format(packetName))
         writeOut(hFile, '')
     writeOut(hFile, '#ifdef __cplusplus')
     writeOut(hFile, '}')
