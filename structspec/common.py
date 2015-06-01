@@ -12,6 +12,7 @@ from os import linesep
 from zope.interface import directlyProvides
 from interfaces import IOutputter
 
+__line_len__ = 65
 schemaVal = '/value'
 typeSizes = {
     "char": 8,
@@ -230,8 +231,8 @@ def isIntegerType(typeName):
         False
     """
     return typeName in typeSizes and not isStringType(typeName) and \
-           not isFloatType(typeName) and not isBooleanType(typeName) \
-           and not isPadding(typeName)
+        not isFloatType(typeName) and not isBooleanType(typeName) \
+        and not isPadding(typeName)
 
 
 def isNonPortableType(typeName):
@@ -299,6 +300,7 @@ def getJsonPointer():
         except ImportError:
             try:
                 from json_pointer import Pointer as JsonPointer
+
                 def resolveJsonPointer(jsonObj, jsonPointer):
                     return JsonPointer(jsonPointer).get(jsonObj)
             except ImportError:
@@ -420,7 +422,8 @@ def writeOutBlock(outFiles, outStr, prefix=''):
             lineLen += len(words[wordNum])
             wordNum += 1
         lines.append('{}{}{}'.format(prefix,
-            ' '.join(words[startWordNum:wordNum])), linesep)
+                     ' '.join(words[startWordNum:wordNum])),
+                     linesep)
         startWordNum = wordNum
     writeOut(outFiles, ''.join(lines))
 directlyProvides(writeOutBlock, IOutputter)
@@ -430,4 +433,3 @@ directlyProvides(writeOutBlock, IOutputter)
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-

@@ -14,7 +14,6 @@ core and validation, respectively).
 
 from sys import exit
 from os.path import join
-from os import linesep
 from collections import OrderedDict
 from argparse import ArgumentParser, Namespace
 try:
@@ -30,6 +29,7 @@ except ImportError:
     try:
         from jsonspec.validators.exceptions import ValidationError
         from jsonspec.validators import load as loadValidator
+
         def validateJson(jsonObj, jsonSchema):
             validator = loadValidator(schema)
             validator.validate(sample)
@@ -38,23 +38,20 @@ except ImportError:
         exit(1)
 from importlib import import_module
 from inspect import getmembers, ismodule
-from zope.interface import directlyProvides
 from common import giveUp, isNonPortableType, getJsonPointer
 # Fetch all language modules without knowing a priori what's available
 import languages
 from languages import *
 for supportedLang in languages.__all__:
-   import_module('structspec.languages.' + supportedLang)
+    import_module('structspec.languages.' + supportedLang)
 __langModTups__ = getmembers(languages, predicate=ismodule)
 langModules = dict([(langMod[1].name, langMod[1])
-    for langMod in __langModTups__])
-from interfaces import IOutputter
+                   for langMod in __langModTups__])
 
 # Get a workable JSON pointer resolver from whichever library
 resolveJsonPointer = getJsonPointer()
 
 __version__ = '0.1'
-__line_len__ = 65
 
 
 def parseArguments(args=None):
@@ -114,16 +111,16 @@ def parseArguments(args=None):
     assert args is None or isinstance(args, list)
     # Parse command-line arguments
     parser = ArgumentParser(
-        description="Process binary packet structure specifications. " + \
-        "Given an input JSON file describing the format of a binary " + \
-        "structure, validate it and output basic handlers in desired " + \
+        description="Process binary packet structure specifications. " +
+        "Given an input JSON file describing the format of a binary " +
+        "structure, validate it and output basic handlers in desired " +
         "target languages."
     )
     defaultSpecification = 'specification.json'
     parser.add_argument(
         '--specification', '-s', default=defaultSpecification,
         nargs='?', const=defaultSpecification,
-        help='Specification file defining binary packet formats. ' + \
+        help='Specification file defining binary packet formats. ' +
         'By default this is called {}'.format(defaultSpecification)
     )
     defaultLanguageList = langModules.keys()
@@ -155,7 +152,7 @@ def parseArguments(args=None):
     parser.add_argument(
         '--schema', default=defaultStructSpecSchema,
         nargs='?', const=defaultStructSpecSchema,
-        help='JSON Schema file used to validate specification. ' + \
+        help='JSON Schema file used to validate specification. ' +
         'You probably do not need to change this.'
     )
     return parser.parse_args(args)
@@ -304,4 +301,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -88,6 +88,7 @@ endianFormatChar = {
     "native": '@'
 }
 
+
 def handleBitFields(bitFieldLen, bitFieldCount, formatList, varList):
     """
     Transiently stores bitfield information.
@@ -345,7 +346,7 @@ def outputPython(specification, options, pyFile):
                 line.append("packet['{}'] = unpack_{}(rawData[:position]){}".format(
                     structureName, typeName, linesep))
                 line.append("{}position += get_{}_len()".format(
-                    prefix,structureName))
+                    prefix, structureName))
             else:
                 typeName = structure['type']
                 if 'count' in structure:
@@ -515,4 +516,3 @@ def outputForLanguage(specification, options):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-

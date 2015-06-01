@@ -9,8 +9,8 @@ binary format in the C programming language.
 
 from os.path import basename
 from zope.interface import moduleProvides
-from structspec.common import writeOut, writeOutBlock, giveUp, getJsonPointer, \
-                   schemaVal, typeSizes, getJsonPointer
+from structspec.common import writeOut, writeOutBlock, giveUp,\
+    getJsonPointer, schemaVal, typeSizes
 from structspec.interfaces import ILanguage
 
 moduleProvides(ILanguage)
@@ -130,9 +130,9 @@ def outputC(specification, options, hFile, cFile):
                 writeOutBlock(hFile, structure['description'], '   * ')
                 writeOut(hFile, '   */')
             if structure['type'].startswith('#/'):
-                 typeName = structure['type'][structure['type'].rfind('/') + 1:]
+                typeName = structure['type'][structure['type'].rfind('/') + 1:]
             else:
-                 typeName = structure['type']
+                typeName = structure['type']
             line.append(typeName)
             line.append(' ')
             line.append(structureName)
@@ -173,7 +173,7 @@ def outputForLanguage(specification, options):
     """
     Outputs handler files for given language.
 
-    Creates files to process given specification in given 
+    Creates files to process given specification in given
     programming language.  Bases output file names on given
     input specification file.
 
@@ -208,4 +208,3 @@ def outputForLanguage(specification, options):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-
