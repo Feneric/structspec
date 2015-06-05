@@ -9,6 +9,7 @@ are needed by multiple portions of structspec.
 
 from sys import exit
 from os import linesep
+from six import string_types
 from zope.interface import directlyProvides
 from interfaces import IOutputter
 
@@ -370,11 +371,12 @@ def writeOut(outFiles, outStr, prefix=''):
     """
     assert hasattr(outFiles, 'write') or (isinstance(outFiles, tuple)
         and all([hasattr(outFile, 'write') for outFile in outFiles]))
-    assert isinstance(outStr, str) and isinstance(prefix, str)
+    assert isinstance(outStr, string_types) and \
+        isinstance(prefix, string_types)
     if hasattr(outFiles, 'write'):
         outFiles = [outFiles]
     for outFile in outFiles:
-        outFile.write('{}{}{}'.format(prefix, outStr, linesep))
+        outFile.write('{}{}{}'.format(prefix, outStr, linesep).encode('utf8'))
 directlyProvides(writeOut, IOutputter)
 
 
@@ -425,7 +427,7 @@ def writeOutBlock(outFiles, outStr, prefix=''):
                      ' '.join(words[startWordNum:wordNum])),
                      linesep)
         startWordNum = wordNum
-    writeOut(outFiles, ''.join(lines))
+    writeOut(outFiles, ''.join(lines).encode('utf8'))
 directlyProvides(writeOutBlock, IOutputter)
 
 
