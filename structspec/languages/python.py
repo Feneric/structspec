@@ -369,6 +369,7 @@ def populateWorkLists(packet, specification,
             if typeName in typeFormatChar and not gotBitField:
                 bitFieldCount = handleBitFields(bitFieldLen, bitFieldCount,
                                                 structAccretions)
+                bitFieldLen = 0
                 structAccretions['formatList'].append(typeFormatChar[typeName])
                 structAccretions['varList'].append(
                     "packet['{}']".format(structureName))
@@ -382,7 +383,7 @@ def populateWorkLists(packet, specification,
     bitFieldCount = handleBitFields(bitFieldLen, bitFieldCount,
                                     structAccretions)
     handleStructBreaks(structDefList, structAccretions, endianness)
-    return (bitFieldCount, bitFieldLen)
+    return bitFieldCount
 
 
 def outputPython(specification, options, pyFile):
@@ -441,7 +442,7 @@ def outputPython(specification, options, pyFile):
             'titles': [],
             'descriptions': []
         }
-        bitFieldCount, bitFieldLen = populateWorkLists(
+        bitFieldCount = populateWorkLists(
             packet, specification,
             structDefList, structAccretions
         )
