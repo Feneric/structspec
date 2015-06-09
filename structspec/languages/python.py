@@ -418,7 +418,7 @@ def outputPython(specification, options, pyFile):
                                              specification[tag]))
     writeOut(pyFile, '"""')
     writeOut(pyFile, '')
-    writeOut(pyFile, 'from struct import unpack_from, calcsize')
+    writeOut(pyFile, 'from struct import calcsize, pack, unpack_from')
     writeOut(pyFile, '')
 
     # Parse the enumerations
@@ -498,6 +498,37 @@ def outputPython(specification, options, pyFile):
         writeOut(pyFile, '')
         writeOut(pyFile, '')
 
+        # Create the pack function
+        writeOut(pyFile, 'def pack_{}(packet):'.format(packetName))
+        writeOut(pyFile, '"""', prefix)
+        writeOut(pyFile, "Packs a {} packet.".format(packetName), prefix)
+        if 'description' in packet:
+            writeOut(pyFile, '')
+            writeOutBlock(pyFile, packet['description'], prefix)
+        writeOut(pyFile, '')
+        writeOut(pyFile, 'Args:', prefix)
+        writeOut(pyFile, 'packet (dict): A dictionary of data to be packed.',
+                 2 * prefix)
+        writeOut(pyFile, '')
+        writeOut(pyFile, 'Returns:', prefix)
+        writeOut(pyFile, 'A binary string containing the packed data.',
+                 2 * prefix)
+        writeOut(pyFile, '"""', prefix)
+        writeOut(pyFile, 'assert isinstance(packet, dict)', prefix)
+        writeOut(pyFile, 'outList = []', prefix)
+        for structDef in structDefList:
+            if structDef['type'] == 'segment':
+                for bitField in structDef['bitFields']:
+                    pass
+                writeOut(pyFile, 'outList.append(pack({}), {})'.format(
+                    structDef['fmt'], structDef['vars'][1:-1]), prefix)
+            elif structDef['type'] == 'substructure':
+                writeOut(pyFile, 'outList.append(pack_{}(packet["{}"])'.format(
+                    structDef['itemType'], structDef['itemName']), prefix)
+        writeOut(pyFile, 'return "".join(outList)', prefix)
+        writeOut(pyFile, '')
+        writeOut(pyFile, '')
+
         # Create the unpack function
         writeOut(pyFile, 'def unpack_{}(rawData):'.format(packetName))
         writeOut(pyFile, '"""', prefix)
@@ -519,6 +550,7 @@ def outputPython(specification, options, pyFile):
         # Write out the next bit to a temporary buffer.
         outBufStr = StringIO()
         writeOut(outBufStr, '"""', prefix)
+        writeOut(outBufStr, 'assert isinstance(rawData, str)', prefix)
         writeOut(outBufStr, 'packet = {}', prefix)
         writeOut(outBufStr, 'position = 0', prefix)
         for structDef in structDefList:
@@ -580,6 +612,7 @@ def outputPython(specification, options, pyFile):
         writeOut(pyFile, 'A structure representing the {} packet.'.format(packetName),
                  2 * prefix)
         writeOut(pyFile, '"""', prefix)
+        writeOut(pyFile, 'assert isinstance(rawData, str)', prefix)
         writeOut(pyFile, 'packet = get_{}(rawData)'.format(packetName), prefix)
         writeOut(pyFile, 'return packet', prefix)
         writeOut(pyFile, '')
