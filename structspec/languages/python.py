@@ -518,9 +518,18 @@ def outputPython(specification, options, pyFile):
         writeOut(pyFile, 'outList = []', prefix)
         for structDef in structDefList:
             if structDef['type'] == 'segment':
-                for bitField in structDef['bitFields']:
-                    pass
-                writeOut(pyFile, 'outList.append(pack({}), {})'.format(
+                for fragNum, (bitFieldName, bitFieldNum, bitFieldSize, bitFieldLabel
+                              ) in enumerate(structDef['bitFields']):
+                    if fragNum == 0:
+                        writeOut(pyFile, 'bitField{} = {}'.format(
+                            bitFieldNum, bitFieldName), prefix)
+                    else:
+                        writeOut(pyFile, 'bitField{} |= {}'.format(
+                            bitFieldNum, bitFieldName), prefix)
+                    if fragNum != len(structDef['bitFields']) - 1:
+                        writeOut(pyFile, 'bitField{} << {}'.format(
+                            bitFieldNum, bitFieldSize), prefix)
+                writeOut(pyFile, 'outList.append(pack({}, {}))'.format(
                     structDef['fmt'], structDef['vars'][1:-1]), prefix)
             elif structDef['type'] == 'substructure':
                 writeOut(pyFile, 'outList.append(pack_{}(packet["{}"])'.format(
