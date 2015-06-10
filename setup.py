@@ -18,7 +18,7 @@ setup(
     packages=find_packages(),
     test_suite='structspec.test.test_structspec',
     install_requires = [
-        'jsonschema', 'jsonpointer', 'json-spec'
+        'jsonschema', 'jsonpointer', 'json-spec', 'zope.interface'
     ],
     extras_require = {
         'documentation': ["doxypypy"]

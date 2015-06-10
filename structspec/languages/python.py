@@ -519,20 +519,19 @@ def outputPython(specification, options, pyFile):
         for structDef in structDefList:
             if structDef['type'] == 'segment':
                 for fragNum, (bitFieldName, bitFieldNum, bitFieldSize, bitFieldLabel
-                              ) in enumerate(structDef['bitFields']):
+                              ) in enumerate(reversed(structDef['bitFields'])):
                     if fragNum == 0:
                         writeOut(pyFile, 'bitField{} = {}'.format(
                             bitFieldNum, bitFieldName), prefix)
                     else:
+                        writeOut(pyFile, 'bitField{} <<= {}'.format(
+                            bitFieldNum, bitFieldSize), prefix)
                         writeOut(pyFile, 'bitField{} |= {}'.format(
                             bitFieldNum, bitFieldName), prefix)
-                    if fragNum != len(structDef['bitFields']) - 1:
-                        writeOut(pyFile, 'bitField{} << {}'.format(
-                            bitFieldNum, bitFieldSize), prefix)
                 writeOut(pyFile, 'outList.append(pack({}, {}))'.format(
                     structDef['fmt'], structDef['vars'][1:-1]), prefix)
             elif structDef['type'] == 'substructure':
-                writeOut(pyFile, 'outList.append(pack_{}(packet["{}"])'.format(
+                writeOut(pyFile, 'outList.append(pack_{}(packet["{}"]))'.format(
                     structDef['itemType'], structDef['itemName']), prefix)
         writeOut(pyFile, 'return "".join(outList)', prefix)
         writeOut(pyFile, '')
@@ -572,7 +571,7 @@ def outputPython(specification, options, pyFile):
                 line.append('{}position += segmentLen{}'.format(prefix, linesep))
                 for fragNum, (bitFieldName, bitFieldNum, bitFieldSize,
                               bitFieldLabel) in enumerate(structDef['bitFields']):
-                    bitFieldMask = hex(int(pow(2, bitFieldSize)))
+                    bitFieldMask = hex(int(pow(2, bitFieldSize)) - 1)
                     if isFloatType(bitFieldLabel):
                         bitFieldType = 'float'
                     elif isBooleanType(bitFieldLabel):
@@ -584,7 +583,7 @@ def outputPython(specification, options, pyFile):
                     line.append("{}{} = {}(bitField{} & {}){}".format(prefix, bitFieldName,
                                 bitFieldType, bitFieldNum, bitFieldMask, linesep))
                     if fragNum < len(structDef['bitFields']) - 1:
-                        line.append("{}bitField{} <<= {}{}".format(prefix,
+                        line.append("{}bitField{} >>= {}{}".format(prefix,
                                     bitFieldNum, bitFieldSize, linesep))
                 if line[-1].endswith(linesep):
                     line[-1] = line[-1][:-len(linesep)]
@@ -592,10 +591,10 @@ def outputPython(specification, options, pyFile):
                 if structDef['description']:
                     writeOut(outBufStr, '')
                     writeOutBlock(outBufStr, structDef['description'], '    # ')
-                line.append("packet['{}'] = unpack_{}(rawData[:position]){}".format(
+                line.append("packet['{}'] = unpack_{}(rawData[position:]){}".format(
                     structDef['itemName'], structDef['itemType'], linesep))
                 line.append("{}position += get_{}_len()".format(
-                    prefix, structDef['itemName']))
+                    prefix, structDef['itemType']))
                 if structDef['title']:
                     line.append(' # {}'.format(structDef['title']))
             if line:
