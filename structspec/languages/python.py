@@ -570,7 +570,8 @@ def outputPython(specification, options, pyFile):
                 line.append('{}{} = unpack_from(segmentFmt, rawData, position){}'.format(
                             prefix, structDef['vars'], linesep))
                 line.append('{}position += segmentLen{}'.format(prefix, linesep))
-                for bitFieldName, bitFieldNum, bitFieldSize, bitFieldLabel in structDef['bitFields']:
+                for fragNum, (bitFieldName, bitFieldNum, bitFieldSize,
+                              bitFieldLabel) in enumerate(structDef['bitFields']):
                     bitFieldMask = hex(int(pow(2, bitFieldSize)))
                     if isFloatType(bitFieldLabel):
                         bitFieldType = 'float'
@@ -582,8 +583,9 @@ def outputPython(specification, options, pyFile):
                         bitFieldType = 'int'
                     line.append("{}{} = {}(bitField{} & {}){}".format(prefix, bitFieldName,
                                 bitFieldType, bitFieldNum, bitFieldMask, linesep))
-                    line.append("{}bitField{} <<= {}{}".format(prefix, bitFieldNum,
-                                bitFieldSize, linesep))
+                    if fragNum < len(structDef['bitFields']) - 1:
+                        line.append("{}bitField{} <<= {}{}".format(prefix,
+                                    bitFieldNum, bitFieldSize, linesep))
                 if line[-1].endswith(linesep):
                     line[-1] = line[-1][:-len(linesep)]
             elif structDef['type'] == 'substructure':
