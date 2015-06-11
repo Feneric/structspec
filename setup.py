@@ -9,7 +9,7 @@ from os import chdir
 
 setup(
     name='structspec',
-    version='0.1.1',
+    version='0.1.2',
     description='Language-independent binary packet structure specification',
     long_description=open(join(dirname(__file__), 'README.rst')).read(),
     keywords='software development JSON Schema Python JavaScript C C++ Nim',

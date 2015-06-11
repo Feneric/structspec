@@ -419,7 +419,48 @@ def outputPython(specification, options, pyFile):
     writeOut(pyFile, '"""')
     writeOut(pyFile, '')
     writeOut(pyFile, 'from struct import calcsize, pack, unpack_from')
+    writeOut(pyFile, 'from zope.interface import directlyProvides, Interface')
     writeOut(pyFile, '')
+    writeOut(pyFile, '')
+    prefix = '    '
+
+    # Create interfaces for testing and documenting
+    extensionlessName = options['pyFilename'].split('.')[0]
+    extensionlessName = extensionlessName[0].upper() + extensionlessName[1:]
+    writeOut(pyFile, 'class I{}Length(Interface):'.format(extensionlessName))
+    writeOut(pyFile, '"""', prefix)
+    writeOut(pyFile, 'A binary packet length calculator', prefix)
+    writeOut(pyFile, '')
+    writeOut(pyFile, 'Interface for an entity that returns the length ' \
+             + 'of a binary packet buffer.', prefix)
+    writeOut(pyFile, '"""', prefix)
+    writeOut(pyFile, 'def __call__():', prefix)
+    writeOut(pyFile, '"""Returns the length of the object in bytes."""',
+             2 * prefix)
+    writeOut(pyFile, '')
+    writeOut(pyFile, '')
+    writeOut(pyFile, 'class I{}Packer(Interface):'.format(extensionlessName))
+    writeOut(pyFile, '"""', prefix)
+    writeOut(pyFile, 'A binary data packer', prefix)
+    writeOut(pyFile, '')
+    writeOut(pyFile, 'Interface for an entity that packs binary data.', prefix)
+    writeOut(pyFile, '"""', prefix)
+    writeOut(pyFile, 'def __call__(packet):', prefix)
+    writeOut(pyFile, '"""Packs a packet dict into a string."""', 2 * prefix)
+    writeOut(pyFile, '')
+    writeOut(pyFile, '')
+    writeOut(pyFile, 'class I{}Unpacker(Interface):'.format(extensionlessName))
+    writeOut(pyFile, '"""', prefix)
+    writeOut(pyFile, 'A binary data unpacker', prefix)
+    writeOut(pyFile, '')
+    writeOut(pyFile, 'Interface for an entity that unpacks binary data.',
+             prefix)
+    writeOut(pyFile, '"""', prefix)
+    writeOut(pyFile, 'def __call__(buffer):', prefix)
+    writeOut(pyFile, '"""Unpacks a binary string into a dict."""', 2 * prefix)
+    writeOut(pyFile, '')
+    writeOut(pyFile, '')
+
 
     # Parse the enumerations
     newLocals = outputEnumerations(specification['enums'].items(),
@@ -446,7 +487,6 @@ def outputPython(specification, options, pyFile):
             packet, specification,
             structDefList, structAccretions
         )
-        prefix = '    '
 
         # Create the get length function
         writeOut(pyFile, 'def get_{}_len():'.format(packetName))
@@ -495,6 +535,8 @@ def outputPython(specification, options, pyFile):
         for substruct in substructureList:
             writeOut(pyFile, 'totalSize += get_{}_len()'.format(substruct), prefix)
         writeOut(pyFile, 'return totalSize', prefix)
+        writeOut(pyFile, 'directlyProvides(get_{}_len, I{}Length)'.format(
+                 packetName, extensionlessName))
         writeOut(pyFile, '')
         writeOut(pyFile, '')
 
@@ -534,6 +576,8 @@ def outputPython(specification, options, pyFile):
                 writeOut(pyFile, 'outList.append(pack_{}(packet["{}"]))'.format(
                     structDef['itemType'], structDef['itemName']), prefix)
         writeOut(pyFile, 'return "".join(outList)', prefix)
+        writeOut(pyFile, 'directlyProvides(pack_{}, I{}Packer)'.format(
+                 packetName, extensionlessName))
         writeOut(pyFile, '')
         writeOut(pyFile, '')
 
@@ -600,6 +644,8 @@ def outputPython(specification, options, pyFile):
             if line:
                 writeOut(outBufStr, ''.join(line), prefix)
         writeOut(outBufStr, 'return packet', prefix)
+        writeOut(outBufStr, 'directlyProvides(unpack_{}, I{}Unpacker)'.format(
+                 packetName, extensionlessName))
         # Write the temporary buffer to the output file.
         writeOut(pyFile, outBufStr.getvalue())
         outBufStr.close()
@@ -629,8 +675,9 @@ def outputPython(specification, options, pyFile):
         writeOut(pyFile, '')
 
     writeOut(pyFile, 'if __name__ == "__main__":')
-    writeOut(pyFile, '    import doctest')
-    writeOut(pyFile, '    doctest.testmod()')
+    writeOut(pyFile, 'from zope.interface.verify import verifyObject', prefix)
+    writeOut(pyFile, 'import doctest', prefix)
+    writeOut(pyFile, 'doctest.testmod()', prefix)
 
 
 def outputForLanguage(specification, options):
