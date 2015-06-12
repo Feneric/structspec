@@ -375,8 +375,11 @@ def writeOut(outFiles, outStr, prefix=''):
         isinstance(prefix, string_types)
     if hasattr(outFiles, 'write'):
         outFiles = [outFiles]
+    outStr = '{}{}'.format(prefix, outStr)
+    if not outStr.endswith(linesep):
+        outStr = '{}{}'.format(outStr, linesep)
     for outFile in outFiles:
-        outFile.write('{}{}{}'.format(prefix, outStr, linesep).encode('utf8'))
+        outFile.write(outStr.encode('utf8'))
 directlyProvides(writeOut, IOutputter)
 
 
@@ -424,8 +427,8 @@ def writeOutBlock(outFiles, outStr, prefix=''):
             lineLen += len(words[wordNum])
             wordNum += 1
         lines.append('{}{}{}'.format(prefix,
-                     ' '.join(words[startWordNum:wordNum])),
-                     linesep)
+                     ' '.join(words[startWordNum:wordNum]),
+                     linesep))
         startWordNum = wordNum
     writeOut(outFiles, ''.join(lines).encode('utf8'))
 directlyProvides(writeOutBlock, IOutputter)
