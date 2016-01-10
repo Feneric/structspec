@@ -91,7 +91,7 @@ endianFormatChar = {
 
 # compiled regular expressions
 varNameRE = regexpcompile(r'^[A-Z_a-z]\w*$')
-exprPortion = r'[\w\s+*/%()\[\]-]+'
+exprPortion = r'[,\w\s+*/%()\[\]-]+'
 exprRE = regexpcompile(r'^{}$'.format(exprPortion))
 structFmtRE = regexpcompile(r'^"([>}}{{!=<@]*[cbBhHiIlLqQfd?spPx}}{{]+)"(\.format\({}\))*$'.format(exprPortion))
 
